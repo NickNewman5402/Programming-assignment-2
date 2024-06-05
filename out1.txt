@@ -1,0 +1,11 @@
+At time 100, IMRAN left the counter from line 1.
+At time 170, ADAM left the counter from line 6.
+At time 395, CHRISTOPHER left the counter from line 6.
+At time 625, MEHMED left the counter from line 1.
+At time 100295, ORHAN left the counter from line 12.
+At time 630, A left the counter from line 1.
+At time 1135, F left the counter from line 6.
+At time 1645, E left the counter from line 5.
+At time 2160, D left the counter from line 4.
+At time 2680, C left the counter from line 3.
+At time 3205, B left the counter from line 2.
