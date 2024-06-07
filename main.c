@@ -46,7 +46,6 @@ int enqueue(queue* qPtr, customers* cPtr) {
         return 0; 
     }
 
-    init(qPtr);
 
     p_temp->p_customer = cPtr; // data became p_customer // second note... p_customer needs to equal what? I think when i enqueue I need to store customer[i] data? I have put line number to satisfy equaling x.// I have updated this to p_temp->p_customer = cPtr; I believe this is putting customer[i] data into p_customer in p_temp wich is a node. 
     p_temp->p_next = NULL;
@@ -97,10 +96,11 @@ int peek(queue* qPtr) {
 
 void displayQueue(queue* myQ) {
   struct node *t =  myQ->p_front;
-  while(t)
-  {
-    printf("%s ", t->p_customer->p_name);
-    t = t->p_next;
+ while(t){
+    //for(int i = 0; i < MAX_SIZE; i++){
+    printf("%s ", t/*[i]*/->p_customer->p_name);
+    t = t/*[i]*/->p_next;
+   // }
   }
 }
 
@@ -118,11 +118,12 @@ customers* createCustomers(customers* p_customer, int m){
     
     p_customer = (customers*)malloc(sizeof(customers)*m);
       
-      for(int j = 0; j < m; j++){
-        scanf("%d", &p_customer[j].enterLineTime); 
-        scanf("%d", &p_customer[j].lineNumber); 
-        p_customer[j].p_name = (char*)malloc(sizeof(char)*15);
-        scanf("%s", p_customer[j].p_name);
+      for(int i = 0; i < m; i++){
+          p_customer[i].enterLineTime = EMPTY;
+        scanf("%d", &p_customer[i].enterLineTime); 
+        scanf("%d", &p_customer[i].lineNumber); 
+        p_customer[i].p_name = (char*)malloc(sizeof(char)*15);
+        scanf("%s", p_customer[i].p_name);
         /* if(strlen(p_customer[j].p_name) > 15)
         //   printf("Name is larger than 15 characters");
 
@@ -132,7 +133,7 @@ customers* createCustomers(customers* p_customer, int m){
         //     putchar(toupper(ch));
         //     j++;
          }*/
-        scanf("%d", &p_customer[j].numOfSmootihes);
+        scanf("%d", &p_customer[i].numOfSmootihes);
       }
   
   return p_customer;
@@ -142,13 +143,17 @@ customers* createCustomers(customers* p_customer, int m){
 /*------------MAIN FUNCTION------------------*/
 int main(void) {
   
-  customers* customers; 
+  customers* customers = NULL; 
+  
   int c; 
   scanf("%d", &c);
   int m;
   scanf("%d", &m);
 
   queue q[MAX_SIZE];
+    for(int i = 0; i < MAX_SIZE; i++){
+        init(&q[i]);
+    }
 
 
   for(int i =0; i < c; i++){
