@@ -156,30 +156,43 @@ int main(void) {
 
 	customers* customers;
 	customers = NULL;
-	int c;
+	int c; // number of test cases 
 	scanf("%d", &c);
-	
 
-	queue q[MAX_SIZE];
-	for (int i = 0; i < MAX_SIZE; i++)
-		init(&q[i]);
-
+	/*Test case for loop*/
 	for (int i = 0; i < c; i++) {
 
-		customers = createCustomers(customers);
+		// create queues
+		// queue q[] was moved here because after each test case I need a new set of queues
+		// no malloc takes place here
+		queue q[MAX_SIZE];// creating 12 queues
+		for (int i = 0; i < MAX_SIZE; i++) {
+			init(&q[i]); // Setting q[i].p_front and q[i].p_back to NULL
+		}
+
+		// create customers
+		customers = createCustomers(customers);/*m input is recieved in this function. 
+												 MALLOC for customers is in this function
+												 Each customers data is input in this function.
+												 For test case i. Returns customers* */
 
 
-    /*------------DEBUGGING START----------------*/
-			// confirming customers are returning to main
+		/*Putting customers in to proper queue line*/
 		for (int j = 0; j < sizeof(customers)+1; j++) {
 			enqueue(&q[(customers[j].lineNumber) - 1], &customers[j]);
-			// printf("\nCustomer [%d] entered line at time %d\n", i, customers[i].enterLineTime);
-			// printf("Customer [%d] entered line number %d\n", i, customers[i].lineNumber);
-			// printf("Customer [%d] Name is %s\n", i, customers[i].p_name);
-			// printf("Customer [%d] ordered %d number of smoothies\n\n", i, customers[i].numOfSmootihes);
-		}// finish test
-	/*------------DEBUGGING END------------------*/
 
+		/*------------Cust info DEBUGGING START----------------*/
+			/* confirming customers are returning to main
+			 printf("\nCustomer [%d] entered line at time %d\n", i, customers[i].enterLineTime);
+			 printf("Customer [%d] entered line number %d\n", i, customers[i].lineNumber);
+			 printf("Customer [%d] Name is %s\n", i, customers[i].p_name);
+			 printf("Customer [%d] ordered %d number of smoothies\n\n", i, customers[i].numOfSmootihes);*/
+		}// finish loading queues
+	/*------------Cust info DEBUGGING END------------------*/
+
+
+	/*------------Display queues DEBUGGING START----------------*/
+		//*
 		for (int k = 0; k < MAX_SIZE; k++) {
 			printf("Queue line %d: ", k + 1);
 			if (q[k].p_front == NULL) {
@@ -187,9 +200,24 @@ int main(void) {
 			}
 			displayQueue(&q[k]);
 			printf("\n");
-		}
+		}//Display queues DEBUG END*/
+	/*------------Display queues DEBUGGING END----------------*/
 
-	}
+		// Begin serving customers
+		// How do I choose fist customer? 
+		// - Find largets "enterLineTime" and make that my currentTIme
+
+
+
+
+
+
+
+
+
+
+
+	}// End test case for loop
 
 	return 0;
 }
