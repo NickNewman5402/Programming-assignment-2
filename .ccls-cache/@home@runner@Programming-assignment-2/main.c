@@ -9,6 +9,8 @@
 
 	#include <stdio.h>
 	#include <stdlib.h>
+	#include <math.h>
+	#include <ctype.h>
 
 	#define MAX_SIZE  12
 	#define EMPTY -1
@@ -39,7 +41,7 @@
 	int peak(queue* qPtr);
 	int front(queue* qPtr);
 	void displayQueue(queue* myQ);
-	customers* createCustomers(customers*);
+	customers* createCustomers(customers*, int*);
 
 	/*------------QUEUE FUNCTIONS----------------*/
 	void init(queue* qPtr) {
@@ -123,27 +125,33 @@
 		return p_newNode;
 	}
 
-	customers* createCustomers(customers* p_customer) {
+	customers* createCustomers(customers* p_customer, int* m /*put in for repl*/) {
 
+		/* taken out for repl
 		int m;
 		scanf("%d", &m);
+		*/
+		
+		p_customer = (customers*)malloc(sizeof(customers)*(*m));
 
-		p_customer = (customers*)malloc(sizeof(customers)*m);
-
-		for (int j = 0; j < m; j++) {
+		for (int j = 0; j < *m; j++) {
 			scanf("%d", &p_customer[j].enterLineTime);
 			scanf("%d", &p_customer[j].lineNumber);
 			p_customer[j].p_name = (char*)malloc(sizeof(char) * 15);
 			scanf("%s", p_customer[j].p_name);
-			/* if(strlen(p_customer[j].p_name) > 15)
+			// if(strlen(p_customer[j].p_name) > 15)
 			//   printf("Name is larger than 15 characters");
 
-			// int l = 0;
-			// while (p_customer[j].p_name[l] != '\n') {
-			//     char ch = p_customer[i].p_name[l];
-			//     putchar(toupper(ch));
-			//     j++;
-			 }*/
+			 char ch;
+			 int l = 0;
+			do {
+					ch = p_customer[j].p_name[l];
+					if (ch != '\0') {
+							p_customer[j].p_name[l] = toupper(ch);
+							//putchar(p_customer[j].p_name[l]);
+					}
+					l++;
+			} while (ch != '\0');
 			scanf("%d", &p_customer[j].numOfSmootihes);
 		}
 
@@ -156,12 +164,20 @@
 
 		customers* customers;
 		customers = NULL;
-		int c; // number of test cases 
+		int m = 0;// added for repl
+		int* p_m; // added for repl
+		p_m = &m;// added for repl
+		int c; // number of test cases
+		long long int currentTime = 0;
+		long long int lowest = pow(10, 9);
+		int* p_tempCust = NULL;
 		scanf("%d", &c);
+		
 
 		/*Test case for loop*/
 		for (int i = 0; i < c; i++) {
-
+			
+			scanf("%d", p_m); // added for repl
 			// create queues
 			// queue q[] was moved here because after each test case I need a new set of queues
 			// no malloc takes place here
@@ -171,17 +187,17 @@
 			}
 
 			// create customers
-			customers = createCustomers(customers);/*m input is recieved in this function. 
+			customers = createCustomers(customers, &m /*added for repl*/);/*m input is recieved in this function. 
 													 MALLOC for customers is in this function
 													 Each customers data is input in this function.
 													 For test case i. Returns customers* */
 
 
 			/*Putting customers in to proper queue line*/
-			for (int j = 0; j < sizeof(customers)+1; j++) {
+			for (int j = 0; j < m /*sizeof(customers)+1*/; j++) {
 				enqueue(&q[(customers[j].lineNumber) - 1], &customers[j]);
 
-			/*------------Cust info DEBUGGING START----------------*/
+			/*----------Cust info DEBUGGING START----------------*/
 				/* confirming customers are returning to main
 				 printf("\nCustomer [%d] entered line at time %d\n", i, customers[i].enterLineTime);
 				 printf("Customer [%d] entered line number %d\n", i, customers[i].lineNumber);
@@ -192,7 +208,7 @@
 
 
 		/*------------Display queues DEBUGGING START----------------*/
-			//*
+			/*
 			for (int k = 0; k < MAX_SIZE; k++) {
 				printf("Queue line %d: ", k + 1);
 				if (q[k].p_front == NULL) {
@@ -203,21 +219,25 @@
 			}//Display queues DEBUG END*/
 		/*------------Display queues DEBUGGING END----------------*/
 
-			// Begin serving customers
-			// How do I choose fist customer? 
-			// - Find largets "enterLineTime" and make that my currentTIme
+			/* Begin serving customers
+			 How do I choose fist customer? 
+			 - Find enterLineTime "enterLineTime" and make that my currentTIme
+			 - Find smallest "numOfSmootihes" and make that my currentCustomer
+			 - Find smallest "lineNumber" and make that my currentCustomer
+			 - Find smallest "enterLineTime" and make that my currentCustomer
+			 - If currentTime is < than all enterLineTime then time increase = enterLineTime + (30 + numOfSmootihes * 5)
+			 - If currentTime is > than all enterLineTime then time increase = currentTime + (30 + numOfSmo//*/
 
-
-
-
-
-
-
-
-
-
-
-		}// End test case for loop
-
+			/*---------Checking customers out----------------------*/
+			for(int k = 0; k < MAX_SIZE; k++){
+				if(currentTime == 0){
+					if((q[k].p_front != NULL) && (q[k].p_front->p_customer->enterLineTime <= lowest))
+						lowest = k;
+				}// End currentTime 0 check
+			}// End for checking customers out
+			currentTime = q[lowest].p_front->p_customer->enterLineTime + (30 + (q[lowest].p_front->p_customer->numOfSmootihes * 5));
+			printf("At time %lld, %s left the counter from line %lld\n", currentTime, q[lowest].p_front->p_customer->p_name, lowest+1);
+		}// End test case loop 
+		printf("\n");
 		return 0;
 	}
