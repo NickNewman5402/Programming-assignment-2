@@ -1,243 +1,227 @@
-	/*
-	Nick Newman
-	6/6/24
-	5295926
-	Computer Science 1 - Programming assignment 2
-	Dr. Tanvir Ahmed Summer 2024
-	latest save on github is 08865624d4ced78dd60375b20310e7cb47a492ee
-	*/
+/*
+Nick Newman
+6/16/24
+5295926
+Computer Science 1 - Programming assignment 2
+Due: 6/16/24
+Dr. Tanvir Ahmed Summer 2024
+*/
 
-	#include <stdio.h>
-	#include <stdlib.h>
-	#include <math.h>
-	#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-	#define MAX_SIZE  12
-	#define EMPTY -1
 
-	/*------------STRUCTURE DEFINES--------------*/
-	typedef struct queue {
-		struct node* p_front;
-		struct node* p_back;
-	}queue;
+#define MAX_SIZE  12
+#define EMPTY -1
+#define MAX_SMOOTHIES 100
+#define MAX_TIME 10000000000
 
-	typedef struct customers {
-		char* p_name;
-		int numOfSmootihes;
-		int lineNumber;
-		int enterLineTime;
-	}customers;
+/*------------STRUCTURE DEFINES--------------*/
+typedef struct queue {
+	struct node* p_front;
+	struct node* p_back;
+}queue;
 
-	typedef struct node {
-		customers* p_customer;
-		struct node* p_next;
-	}node;
+typedef struct customers {
+	char* p_name;
+	int numOfSmoothies;
+	int lineNumber;
+	int enterLineTime;
+}customers;
 
-	/*------------FUNCTION SIGNATURES------------*/
-	void init(queue* qPtr);
-	int enqueue(queue* qPtr, customers* cPtr);
-	int dequeue(queue* qPtr);
-	int empty(queue* qPtr);
-	int peak(queue* qPtr);
-	int front(queue* qPtr);
-	void displayQueue(queue* myQ);
-	customers* createCustomers(customers*, int*);
+typedef struct node {
+	customers* p_customer;
+	struct node* p_next;
+}node;
 
-	/*------------QUEUE FUNCTIONS----------------*/
-	void init(queue* qPtr) {
-		qPtr->p_front = NULL;
-		qPtr->p_back = NULL;
+/*------------FUNCTION SIGNATURES------------*/
+void init(queue* qPtr);
+void displayQueue(queue* myQ);
+int enqueue(queue* qPtr, customers* cPtr);
+int empty(queue* qPtr);
+int peek(queue* qPtr);
+int findNextCustomer(queue*, int*);
+customers* dequeue(queue* qPtr);
+customers* createCustomers(customers* , int*);
+
+/*------------QUEUE FUNCTIONS----------------*/
+void init(queue* qPtr) {
+	qPtr->p_front = NULL;
+	qPtr->p_back = NULL;
+}
+
+int enqueue(queue* qPtr, customers* cPtr) {
+
+	struct node* p_temp = malloc(sizeof(struct node));
+
+	if (p_temp == NULL) {
+		return 0;
 	}
 
-	int enqueue(queue* qPtr, customers* cPtr) {
+	p_temp->p_customer = cPtr; 
+	p_temp->p_next = NULL;
 
-		struct node* p_temp = malloc(sizeof(struct node));
-
-		if (p_temp == NULL) {
-			return 0;
-		}
-
-			//init(qPtr);
-
-		p_temp->p_customer = cPtr; // data became p_customer // second note... p_customer needs to equal what? I think when i enqueue I need to store customer[i] data? I have put line number to satisfy equaling x.// I have updated this to p_temp->p_customer = cPtr; I believe this is putting customer[i] data into p_customer in p_temp wich is a node. 
-		p_temp->p_next = NULL;
-
-		if (qPtr->p_back == NULL) { // I need to do something about qPtr->p_back for a 2nd or more entry
-			qPtr->p_front = p_temp;
-			qPtr->p_back = p_temp;
-
-			return 1;
-		}
-
-		qPtr->p_back->p_next = p_temp;
+	if (qPtr->p_front == NULL) { // if I have no one in line make this customer first in line
+		qPtr->p_front = p_temp;
 		qPtr->p_back = p_temp;
 
 		return 1;
-
 	}
 
-	int dequeue(queue* qPtr) {
+		//if front is not null (I have someone in line) put this customer behind the last person
+	qPtr->p_back->p_next = p_temp;
+	qPtr->p_back = p_temp;
 
-		if (empty(qPtr)) {
-			return EMPTY;
+	return 1;
+
+}
+
+customers* dequeue(queue* qPtr) {
+
+	if (empty(qPtr)) {
+		return EMPTY;
+	}
+
+	struct node* p_temp = qPtr->p_front;
+	qPtr->p_front = qPtr->p_front->p_next;
+	customers* retval = p_temp->p_customer; // data became p_customer->lineNumber to satify the retVal
+	free(p_temp);
+
+	/*This is written because of the above 5 lines*/
+	if (empty(qPtr))
+		qPtr->p_back = NULL;
+	return retval;
+}
+
+int empty(queue* qPtr) {
+	if (!qPtr) {
+		return EMPTY;
+	}
+	return 0;
+}
+
+int peek(queue* qPtr) {
+	if (!qPtr) {
+		return EMPTY;
+	}
+	return qPtr->p_front->p_customer->lineNumber;
+}
+
+void displayQueue(queue* myQ) {
+	struct node *t = myQ->p_front;
+	while (t)
+	{
+		printf("%s ", t->p_customer->p_name);
+		t = t->p_next;
+	}
+}
+
+
+/*------------CUSTOMER FUCTIONS---------------*/
+
+customers* createCustomers(customers* p_customer, int* p_m) {
+
+	//int m;
+	scanf("%d", p_m);
+
+	p_customer = (customers*)malloc(sizeof(customers)*(*p_m));
+
+	for (int j = 0; j < (*p_m); j++) {
+		scanf("%d", &p_customer[j].enterLineTime);
+		scanf("%d", &p_customer[j].lineNumber);
+		p_customer[j].p_name = (char*)malloc(sizeof(char) * 15);
+		scanf("%s", p_customer[j].p_name);
+		scanf("%d", &p_customer[j].numOfSmoothies);
+	}
+
+	return p_customer;
+}
+
+int findNextCustomer(queue* p_q, int* p_cT) {
+	int sC = 101;
+	int nC = -1;
+
+		// finding the customer who has been in line less than the current time and has the least amount of smoothies
+	for (int k = 0; k < MAX_SIZE; k++) {
+		if ((p_q[k].p_front != NULL) && (p_q[k].p_front->p_customer->enterLineTime < *p_cT) && (p_q[k].p_front->p_customer->numOfSmoothies < sC)) {
+			sC = p_q[k].p_front->p_customer->numOfSmoothies;
+			nC = k;
+
 		}
-
-		struct node* p_temp = qPtr->p_front;
-		qPtr->p_front = qPtr->p_front->p_next;
-		int retval = p_temp->p_customer->lineNumber; // data became p_customer->lineNumber to satify the retVal
-		free(p_temp);
-
-		/*This is written because of the above 5 lines*/
-		if (empty(qPtr))
-			qPtr->p_back = NULL;
-		return retval;
-	}
-
-	int empty(queue* qPtr) {
-		if (!qPtr) {
-			return EMPTY;
-		}
-	}
-
-	int peek(queue* qPtr) {
-		if (!qPtr) {
-			return EMPTY;
-		}
-		return qPtr->p_front->p_customer->lineNumber;
-	}
-
-	void displayQueue(queue* myQ) {
-		struct node *t = myQ->p_front;
-		while (t)
-		{
-			printf("%s ", t->p_customer->p_name);
-			t = t->p_next;
-		}
-	}
+	}// end first confition for
 
 
-	/*------------CUSTOMER FUCTIONS---------------*/
-	node* createCustomerNode(node* p_front) {
+	// out of the customers who have been in line longer than the current time. I need to find the one that arrived first (best time... lowest time number?)
+	if (nC == -1) {
 
-		node* p_newNode = (node*)malloc(sizeof(node));
-		p_newNode->p_next = NULL;
+		int lowestTime = 10000000001;
 
-		return p_newNode;
-	}
-
-	customers* createCustomers(customers* p_customer, int* m /*put in for repl*/) {
-
-		/* taken out for repl
-		int m;
-		scanf("%d", &m);
-		*/
-		
-		p_customer = (customers*)malloc(sizeof(customers)*(*m));
-
-		for (int j = 0; j < *m; j++) {
-			scanf("%d", &p_customer[j].enterLineTime);
-			scanf("%d", &p_customer[j].lineNumber);
-			p_customer[j].p_name = (char*)malloc(sizeof(char) * 15);
-			scanf("%s", p_customer[j].p_name);
-			// if(strlen(p_customer[j].p_name) > 15)
-			//   printf("Name is larger than 15 characters");
-
-			 char ch;
-			 int l = 0;
-			do {
-					ch = p_customer[j].p_name[l];
-					if (ch != '\0') {
-							p_customer[j].p_name[l] = toupper(ch);
-							//putchar(p_customer[j].p_name[l]);
-					}
-					l++;
-			} while (ch != '\0');
-			scanf("%d", &p_customer[j].numOfSmootihes);
-		}
-
-		return p_customer;
-	}
-
-
-	/*------------MAIN FUNCTION------------------*/
-	int main(void) {
-
-		customers* customers;
-		customers = NULL;
-		int m = 0;// added for repl
-		int* p_m; // added for repl
-		p_m = &m;// added for repl
-		int c; // number of test cases
-		long long int currentTime = 0;
-		long long int lowest = pow(10, 9);
-		int* p_tempCust = NULL;
-		scanf("%d", &c);
-		
-
-		/*Test case for loop*/
-		for (int i = 0; i < c; i++) {
-			
-			scanf("%d", p_m); // added for repl
-			// create queues
-			// queue q[] was moved here because after each test case I need a new set of queues
-			// no malloc takes place here
-			queue q[MAX_SIZE];// creating 12 queues
-			for (int i = 0; i < MAX_SIZE; i++) {
-				init(&q[i]); // Setting q[i].p_front and q[i].p_back to NULL
+				// go through all the queues
+		for (int k = 0; k < MAX_SIZE; k++) {
+						// finding the customer that has been in line greater than current time but less than all others in the front
+			if (p_q[k].p_front != NULL && p_q[k].p_front->p_customer->enterLineTime <= lowestTime) {
+				lowestTime = p_q[k].p_front->p_customer->enterLineTime;
+				nC = k;
 			}
 
-			// create customers
-			customers = createCustomers(customers, &m /*added for repl*/);/*m input is recieved in this function. 
-													 MALLOC for customers is in this function
-													 Each customers data is input in this function.
-													 For test case i. Returns customers* */
+		}// End 2nd condition for
+	}// end check of if I found a customer already
+	return nC; // returning the index for the next customer
+}// End queue for 
 
 
-			/*Putting customers in to proper queue line*/
-			for (int j = 0; j < m /*sizeof(customers)+1*/; j++) {
-				enqueue(&q[(customers[j].lineNumber) - 1], &customers[j]);
 
-			/*----------Cust info DEBUGGING START----------------*/
-				/* confirming customers are returning to main
-				 printf("\nCustomer [%d] entered line at time %d\n", i, customers[i].enterLineTime);
-				 printf("Customer [%d] entered line number %d\n", i, customers[i].lineNumber);
-				 printf("Customer [%d] Name is %s\n", i, customers[i].p_name);
-				 printf("Customer [%d] ordered %d number of smoothies\n\n", i, customers[i].numOfSmootihes);*/
-			}// finish loading queues
-		/*------------Cust info DEBUGGING END------------------*/
+/*------------MAIN FUNCTION------------------*/
+int main(void) {
+
+	//atexit(report_mem_leak); //for memory leak detector.
+
+	customers* customerList;
+	customerList = NULL;
+
+	int c;
+	int choosenIndex = 0;
+	int smoothieCount = MAX_SMOOTHIES;
+	int nextCustomer = 0;
+	int m = 0;
 
 
-		/*------------Display queues DEBUGGING START----------------*/
-			/*
-			for (int k = 0; k < MAX_SIZE; k++) {
-				printf("Queue line %d: ", k + 1);
-				if (q[k].p_front == NULL) {
-					printf("EMPTY");
-				}
-				displayQueue(&q[k]);
-				printf("\n");
-			}//Display queues DEBUG END*/
-		/*------------Display queues DEBUGGING END----------------*/
+	queue q[MAX_SIZE];
+	for (int i = 0; i < MAX_SIZE; i++)
+		init(&q[i]);
 
-			/* Begin serving customers
-			 How do I choose fist customer? 
-			 - Find enterLineTime "enterLineTime" and make that my currentTIme
-			 - Find smallest "numOfSmootihes" and make that my currentCustomer
-			 - Find smallest "lineNumber" and make that my currentCustomer
-			 - Find smallest "enterLineTime" and make that my currentCustomer
-			 - If currentTime is < than all enterLineTime then time increase = enterLineTime + (30 + numOfSmootihes * 5)
-			 - If currentTime is > than all enterLineTime then time increase = currentTime + (30 + numOfSmo//*/
+	scanf("%d", &c);
 
-			/*---------Checking customers out----------------------*/
-			for(int k = 0; k < MAX_SIZE; k++){
-				if(currentTime == 0){
-					if((q[k].p_front != NULL) && (q[k].p_front->p_customer->enterLineTime <= lowest))
-						lowest = k;
-				}// End currentTime 0 check
-			}// End for checking customers out
-			currentTime = q[lowest].p_front->p_customer->enterLineTime + (30 + (q[lowest].p_front->p_customer->numOfSmootihes * 5));
-			printf("At time %lld, %s left the counter from line %lld\n", currentTime, q[lowest].p_front->p_customer->p_name, lowest+1);
-		}// End test case loop 
-		printf("\n");
-		return 0;
-	}
+	for (int i = 0; i < c; i++) {// cycle through test cases 
+
+		customerList = createCustomers(customerList, &m);// creating customers
+
+		long long int currentTime = 0;
+
+		for (int j = 0; j < m; j++) {// putting customers in queues
+			enqueue(&q[(customerList[j].lineNumber) - 1], &customerList[j]);
+		}// finish queing customers
+
+
+		// FINDING A SERVICABLE CUSTOMER
+		for(int k = 0; k < m; k++){
+		nextCustomer = findNextCustomer(q, &currentTime);
+
+		if (q[nextCustomer].p_front->p_customer->enterLineTime > currentTime) {
+			currentTime = q[nextCustomer].p_front->p_customer->enterLineTime;
+		}
+			currentTime += 30 + (q[nextCustomer].p_front->p_customer->numOfSmoothies * 5);
+
+			printf("At time %lld, %s left the counter from line %d.\n", currentTime, q[nextCustomer].p_front->p_customer->p_name, nextCustomer + 1);
+			customers* temp = dequeue(&q[nextCustomer]);
+			free(temp->p_name);
+		}
+
+		free(customerList);
+
+	}// End for test case loop
+
+
+
+	return 0;
+}
